@@ -11,7 +11,7 @@ class MovingAverageTable(Table):
             self.__ma2 = ma2
     
         def gen_table(self):
-        # BUG: Table class does not know about the moving average, so it will not start the cumulative return from the first day of the moving average.    
+        # Fixed Bug: Table class does not know about the moving average, so it will not start the cumulative return from the first day of the moving average.    
             super().gen_table()
 
         #we .shift() to push the moving average forward a day because the moving average cannot start until x days have finished
@@ -33,6 +33,10 @@ class MovingAverageTable(Table):
             self.__df.dropna(inplace = True)
         #Cumulative Returns
             self.__df['Cumulative Model Return'] = (np.exp(self.__df['Model Return'] / 100).cumprod() - 1) * 100
+
+            #recalc return and cumulative return to include model returns
+            self.__df['Return'] = (np.log(self.__df['Close']).diff()) * 100
+            self.__df['Cumulative Return'] = (np.exp(self.__df['Return'] / 100).cumprod() - 1) * 100
 
         #formatting the table
             self.__df = round((self.__df[['Day Count', 'Open', 'High', 'Low', 'Close', f'{self.__ma1}-day MA', f'{self.__ma2}-day MA', 'Return', 'Cumulative Return', 'Model Return', 'Cumulative Model Return', 'Signal', 'Entry']]), 3)
